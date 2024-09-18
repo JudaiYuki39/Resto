@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  idUser          Int      @id @default(autoincrement())
+  uuid            String   @unique @db.VarChar(255)
+  name            String   @default("")
+  email           String   @unique @default("")
+  password        String   @default("")
+  profile_picture String   @default("")
+  role            Role     @default(CASHIER)
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @updatedAt
+  order           order[]
+}
+
+model menu {
+  idMenu      Int          @id @default(autoincrement())
+  uuid        String       @unique @db.VarChar(255)
+  name        String       @default("")
+  price       Float
+  category    Category     @default(food)
+  picture     String       @default("")
+  description String       @db.Text
+  order_list  order_list[]
+}
+
+model order {
+  idOrder       Int          @id @default(autoincrement())
+  uuid          String       @unique @db.VarChar(255)
+  customer      String       @default("")
+  table_number  String       @default("")
+  total_price   Int
+  paymen_method paymen       @default(cash)
+  user          user         @relation(fields: [idUser], references: [idUser])
+  idUser        Int
+  status        Status       @default(New)
+  order_list    order_list[]
+}
+
+model order_list {
+  idOrderList Int    @id @default(autoincrement())
+  uuid        String @unique @db.VarChar(255)
+  quantity    Int
+  note        String @db.Text
+  order       order  @relation(fields: [idOrder], references: [idOrder])
+  idOrder     Int
+  menu        menu   @relation(fields: [idMenu], references: [idMenu])
+  idMenu      Int
+}
+
+enum paymen {
+  cash
+  qris
+}
+
+enum Status {
+  New
+  Paid
+  Done
+}
+
+enum Category {
+  food
+  drink
+  snack
+}
+
+enum Role {
+  MANAGER
+  CASHIER
+}
